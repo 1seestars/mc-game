@@ -1,9 +1,11 @@
 import { combineReducers, createStore } from 'redux'
-import { charactersReducer } from './characters/reducer'
+import { gameReducer } from './game/reducer'
 import { composeWithDevTools } from 'redux-devtools-extension'
+import { connectingReducer } from './websocket/reducer'
 
 export const rootReducer = combineReducers({
-  characters: charactersReducer
+  connecting: connectingReducer,
+  game: gameReducer
 })
 
 export const store = createStore(rootReducer, composeWithDevTools())

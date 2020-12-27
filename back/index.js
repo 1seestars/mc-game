@@ -44,10 +44,14 @@ class Game {
 }
 
 let games = []
+const characterList = Array(28).fill({
+  name: 'test'
+})
 
 server.on('connection', (ws) => {
   ws.id = uniqid()
   const response = {
+    message: 'initialization',
     id: ws.id
   }
   ws.send(JSON.stringify(response))
@@ -60,7 +64,7 @@ server.on('connection', (ws) => {
       const game = new Game(uniqid(), ws.id)
 
       games.push(game)
-      ws.send(JSON.stringify({ gameId: game.id }))
+      ws.send(JSON.stringify({ message: 'newGame', gameId: game.id }))
     }
 
     if (payload.method === 'join') {

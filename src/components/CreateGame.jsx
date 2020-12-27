@@ -1,10 +1,44 @@
 import React, { useEffect, useRef } from 'react'
-import { setSelectedId } from '../store/characters/actions'
+import { setGameId, setSelectedId } from '../store/game/actions'
 import { connect } from 'react-redux'
+import { ws } from '../utils/WebSocket'
+import { setPageOpened, setWsId } from '../store/websocket/actions'
+import ConnectingPage from './ConnectingPage'
+import StartPage from './StartPage'
+import ReadyPage from './ReadyPage'
+import MainPage from './MainPage'
 
-const CreateGame = ({ characterList, selectedCharacterId, setSelectedId }) => {
+const CreateGame = ({
+  pageOpened,
+  characterList,
+  selectedCharacterId,
+  setSelectedId,
+  setPageOpened,
+  setWsId,
+  setGameId
+}) => {
   useEffect(() => {
-    ulRef.current.focus()
+    ws.onopen = () => {
+      setPageOpened('StartPage')
+    }
+
+    ws.onmessage = (response) => {
+      const res = JSON.parse(response.data)
+
+      if (res.message && res.message === 'initialization') {
+        setWsId(res.id)
+      }
+
+      if (res.message && res.message === 'newGame') {
+        setGameId(res.gameId)
+      }
+
+      if (res.message && res.message === 'confirmed') {
+        alert('confirmed')
+      }
+    }
+
+    // ulRef.current.focus()
   }, [])
 
   const ulRef = useRef({})
@@ -25,36 +59,48 @@ const CreateGame = ({ characterList, selectedCharacterId, setSelectedId }) => {
 
   return (
     <>
-      <ul
-        onKeyDown={handleListKeyDown}
-        style={{ background: 'lightgray', outline: 'none' }}
-        tabIndex={0}
-        ref={ulRef}
-      >
-        {characterList.map((character, index) => (
-          <li key={index} onClick={(e) => setSelectedId(index)}>
-            {character.name}
-            {selectedCharacterId === index && (
-              <span>
-                <strong>&nbsp; selected</strong>
-              </span>
-            )}
-          </li>
-        ))}
-      </ul>
+      {pageOpened === 'Connecting' && <ConnectingPage />}
+      {pageOpened === 'StartPage' && <StartPage />}
+      {pageOpened === 'ReadyPage' && <ReadyPage />}
+      {pageOpened === 'MainPage' && <MainPage />}
     </>
   )
 }
 
 const mapStateToProps = ({
-  characters: { characterList, selectedCharacterId }
+  connecting: { pageOpened },
+  game: { characterList, selectedCharacterId }
 }) => ({
+  pageOpened,
   characterList,
   selectedCharacterId
 })
 
 const mapDispatchToProps = {
-  setSelectedId
+  setSelectedId,
+  setPageOpened,
+  setWsId,
+  setGameId
 }
 
 export default connect(mapStateToProps, mapDispatchToProps)(CreateGame)
+
+// <>
+// <ul
+// onKeyDown={handleListKeyDown}
+// style={{ background: 'lightgray', outline: 'none' }}
+// tabIndex={0}
+// ref={ulRef}
+//     >
+//     {characterList.map((character, index) => (
+//           <li key={index} onClick={(e) => setSelectedId(index)}>
+//             {character.name}
+//             {selectedCharacterId === index && (
+//                 <span>
+//                 <strong>&nbsp; selected</strong>
+//               </span>
+//             )}
+//           </li>
+//       ))}
+// </ul>
+// </>
