@@ -1,4 +1,5 @@
 import {
+  SET_CHARACTER_LIST,
   SET_SELECTED_ID,
   SET_GAME_ID,
   SET_COPY_BUTTON_VALUE
@@ -13,6 +14,11 @@ const initialState = {
 
 export const gameReducer = (state = initialState, action) => {
   switch (action.type) {
+    case SET_CHARACTER_LIST:
+      return {
+        ...state,
+        characterList: action.payload
+      }
     case SET_SELECTED_ID:
       return {
         ...state,

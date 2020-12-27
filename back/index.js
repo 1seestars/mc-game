@@ -6,10 +6,10 @@ const server = new WebSocket.Server({ port: 4000 }, () =>
 )
 
 class Game {
-  constructor(id, playerX) {
+  constructor(id, player1) {
     this.id = id
     this.openToEnter = true
-    this.playerX = playerX
+    this.player1 = player1
     this.gameProcess = {
       squares: Array(9).fill(null),
       xIsNext: true,
@@ -43,7 +43,7 @@ class Game {
   // }
 }
 
-let games = []
+const games = []
 const characterList = Array(28).fill({
   name: 'test'
 })
@@ -71,16 +71,20 @@ server.on('connection', (ws) => {
       // join the game
       let foundSuchGame = false
       games.forEach((g) => {
-        if (g.id === payload.idFromURL && g.openToEnter) {
-          g.playerO = ws.id
+        if (g.id === payload.invitationId && g.openToEnter) {
+          g.player2 = ws.id
           g.openToEnter = false
           server.clients.forEach((client) => {
             if (
               client.readyState === WebSocket.OPEN &&
-              (client.id === g.playerX || client.id === g.playerO)
+              (client.id === g.player1 || client.id === g.player2)
             ) {
               client.send(
-                JSON.stringify({ message: 'confirmed', gameId: g.id })
+                JSON.stringify({
+                  message: 'confirmed',
+                  gameId: g.id,
+                  characterList
+                })
               )
               client.gameId = g.id
             }

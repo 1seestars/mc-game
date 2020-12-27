@@ -1,5 +1,9 @@
 import React, { useEffect, useRef } from 'react'
-import { setGameId, setSelectedId } from '../store/game/actions'
+import {
+  setCharacterList,
+  setGameId,
+  setSelectedId
+} from '../store/game/actions'
 import { connect } from 'react-redux'
 import { ws } from '../utils/WebSocket'
 import { setPageOpened, setWsId } from '../store/websocket/actions'
@@ -11,6 +15,7 @@ import MainPage from './MainPage'
 const CreateGame = ({
   pageOpened,
   characterList,
+  setCharacterList,
   selectedCharacterId,
   setSelectedId,
   setPageOpened,
@@ -34,7 +39,8 @@ const CreateGame = ({
       }
 
       if (res.message && res.message === 'confirmed') {
-        alert('confirmed')
+        setCharacterList(res.characterList)
+        setPageOpened('ReadyPage')
       }
     }
 
@@ -77,6 +83,7 @@ const mapStateToProps = ({
 })
 
 const mapDispatchToProps = {
+  setCharacterList,
   setSelectedId,
   setPageOpened,
   setWsId,

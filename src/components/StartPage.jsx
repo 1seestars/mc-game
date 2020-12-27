@@ -23,8 +23,7 @@ const StartPage = ({ gameId, copyButtonValue, setCopyButtonValue }) => {
         <button onClick={copyInvitationURL}>{copyButtonValue}</button>
       ) : (
         <button onClick={() => sendToServer({ method: 'create' })}>
-          {' '}
-          start
+          Start
         </button>
       )}
     </>
