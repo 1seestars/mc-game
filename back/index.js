@@ -6,14 +6,16 @@ const server = new WebSocket.Server({ port: 4000 }, () =>
 )
 
 class Game {
-  constructor(id, player1) {
+  constructor(id, player_1_id) {
     this.id = id
     this.openToEnter = true
-    this.player1 = player1
-    this.gameProcess = {
-      squares: Array(9).fill(null),
-      xIsNext: true,
-      winner: false
+    this.player_1 = {
+      id: player_1_id,
+      characterId: 0
+    }
+    this.player_2 = {
+      id: '',
+      characterId: 0
     }
   }
 
@@ -72,12 +74,12 @@ server.on('connection', (ws) => {
       let foundSuchGame = false
       games.forEach((g) => {
         if (g.id === payload.invitationId && g.openToEnter) {
-          g.player2 = ws.id
+          g.player_2.id = ws.id
           g.openToEnter = false
           server.clients.forEach((client) => {
             if (
               client.readyState === WebSocket.OPEN &&
-              (client.id === g.player1 || client.id === g.player2)
+              (client.id === g.player_1.id || client.id === g.player_2.id)
             ) {
               client.send(
                 JSON.stringify({
@@ -95,32 +97,39 @@ server.on('connection', (ws) => {
       if (!foundSuchGame) ws.send(JSON.stringify({ message: 'noGameFound' }))
     }
 
-    if (payload.method === 'play') {
+    if (payload.method === 'changeCharacter') {
       // paying the game
       games.forEach((g) => {
         if (g.id === payload.gameId) {
-          const playerMark = g.playerX === ws.id ? 'X' : 'O'
-          if (!g.gameProcess.winner && !g.gameProcess.squares[payload.i]) {
-            if (
-              (g.gameProcess.xIsNext && playerMark === 'X') ||
-              (!g.gameProcess.xIsNext && playerMark === 'O')
-            ) {
-              g.gameProcess.squares[payload.field] = playerMark
+          const player = ws.id === g.player_1.id ? 'player_1' : 'player_2'
 
-              g.gameProcess.xIsNext = !g.gameProcess.xIsNext
-              g.calculateWinner()
+          if (payload.action === 'next') {
+            if (g[player].characterId < characterList.length - 1) {
+              g[player].characterId++
+            }
+          }
 
-              server.clients.forEach((client) => {
-                if (
-                  client.readyState === WebSocket.OPEN &&
-                  (client.id === g.playerX || client.id === g.playerO)
-                ) {
-                  client.send(JSON.stringify({ gameProcess: g.gameProcess }))
-                }
-              })
+          if (payload.action === 'previous') {
+            if (g[player].characterId > 0) {
+              g[player].characterId--
             }
           }
         }
+
+        server.clients.forEach((client) => {
+          if (
+            client.readyState === WebSocket.OPEN &&
+            (client.id === g.player_1.id || client.id === g.player_2.id)
+          ) {
+            client.send(
+              JSON.stringify({
+                message: 'step',
+                player_1: g.player_1.characterId,
+                player_2: g.player_2.characterId
+              })
+            )
+          }
+        })
       })
     }
 

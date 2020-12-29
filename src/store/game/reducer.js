@@ -1,6 +1,5 @@
 import {
   SET_CHARACTER_LIST,
-  SET_SELECTED_ID,
   SET_GAME_ID,
   SET_COPY_BUTTON_VALUE
 } from './actions.js'
@@ -8,8 +7,7 @@ import {
 const initialState = {
   copyButtonValue: 'Copy invitation link',
   gameId: '',
-  characterList: [],
-  selectedCharacterId: 0
+  characterList: []
 }
 
 export const gameReducer = (state = initialState, action) => {
@@ -18,11 +16,6 @@ export const gameReducer = (state = initialState, action) => {
       return {
         ...state,
         characterList: action.payload
-      }
-    case SET_SELECTED_ID:
-      return {
-        ...state,
-        selectedCharacterId: action.payload
       }
     case SET_GAME_ID:
       return {
@@ -34,6 +27,7 @@ export const gameReducer = (state = initialState, action) => {
         ...state,
         copyButtonValue: action.payload
       }
+
     default:
       return state
   }

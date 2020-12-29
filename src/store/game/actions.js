@@ -1,16 +1,10 @@
 export const SET_CHARACTER_LIST = 'SET_CHARACTER_LIST'
-export const SET_SELECTED_ID = 'SET_SELECTED_ID'
 export const SET_GAME_ID = 'SET_GAME_ID'
 export const SET_COPY_BUTTON_VALUE = 'SET_COPY_BUTTON_VALUE'
 
 export const setCharacterList = (list) => ({
   type: SET_CHARACTER_LIST,
   payload: list
-})
-
-export const setSelectedId = (id) => ({
-  type: SET_SELECTED_ID,
-  payload: id
 })
 
 export const setGameId = (id) => ({

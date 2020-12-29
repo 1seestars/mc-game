@@ -8,14 +8,17 @@ import { setPageOpened } from '../store/websocket/actions'
 import ReadyPage from './ReadyPage'
 import MainPage from './MainPage'
 import GameNotFoundPage from './GameNotFoundPage'
+import { setCharacterId, setPlayer } from '../store/player/actions'
 
 const JoinGame = ({
+  order,
   match,
   pageOpened,
-  gameId,
   setGameId,
   setPageOpened,
-  setCharacterList
+  setCharacterList,
+  setPlayer,
+  setCharacterId
 }) => {
   useEffect(() => {
     ws.onopen = () => {
@@ -29,10 +32,18 @@ const JoinGame = ({
         setGameId(res.gameId)
         setCharacterList(res.characterList)
         setPageOpened('ReadyPage')
+        setPlayer(2)
       }
 
       if (res.message && res.message === 'noGameFound') {
         setPageOpened('GameNotFoundPage')
+      }
+
+      if (res.message && res.message === 'step') {
+        setCharacterId({
+          player_1: res.player_1,
+          player_2: res.player_2
+        })
       }
     }
   }, [])
@@ -46,15 +57,20 @@ const JoinGame = ({
   )
 }
 
-const mapStateToProps = ({ game: { gameId }, connecting: { pageOpened } }) => ({
-  gameId,
+const mapStateToProps = ({
+  connecting: { pageOpened },
+  player: { order }
+}) => ({
+  order,
   pageOpened
 })
 
 const mapDispatchToProps = {
   setGameId,
   setCharacterList,
-  setPageOpened
+  setPageOpened,
+  setPlayer,
+  setCharacterId
 }
 
 export default compose(

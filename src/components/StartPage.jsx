@@ -12,7 +12,7 @@ const StartPage = ({ gameId, copyButtonValue, setCopyButtonValue }) => {
         setCopyButtonValue('Copied')
         setTimeout(() => {
           setCopyButtonValue('Copy invitation link')
-        }, 2000)
+        }, 1000)
       })
       .catch((err) => alert(err))
   }
