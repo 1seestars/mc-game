@@ -15,7 +15,7 @@ const Button = styled.button`
   border-radius: 5px;
   cursor: pointer;
   font-family: inherit;
-  box-shadow: 0 3px 5px 2px #1c1c1c;
+  box-shadow: 0 3px 8px 2px #2b2b2b;
   animation: gradient 4s linear infinite;
 
   @keyframes gradient {
