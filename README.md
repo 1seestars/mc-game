@@ -4,6 +4,12 @@ This project was bootstrapped with [Create React App](https://github.com/faceboo
 
 ## Available Scripts
 
+In the directory: /back, you can run:
+
+### `node index`
+
+Runs the server.
+
 In the project directory, you can run:
 
 ### `yarn start`

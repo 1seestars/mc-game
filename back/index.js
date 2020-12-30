@@ -11,44 +11,45 @@ class Game {
     this.openToEnter = true
     this.player_1 = {
       id: player_1_id,
-      characterId: 0
+      characterId: 0,
+      isReady: false
     }
     this.player_2 = {
       id: '',
-      characterId: 0
+      characterId: 0,
+      isReady: false
     }
+    this.icons = [
+      {
+        keyCode: 81,
+        isShown: false
+      },
+      {
+        keyCode: 87,
+        isShown: false
+      },
+      {
+        keyCode: 69,
+        isShown: false
+      },
+      {
+        keyCode: 82,
+        isShown: false
+      },
+      {
+        keyCode: 84,
+        isShown: false
+      },
+      {
+        keyCode: 89,
+        isShown: false
+      }
+    ]
   }
-
-  // calculateWinner = () => {
-  //   const lines = [
-  //     [0, 1, 2],
-  //     [3, 4, 5],
-  //     [6, 7, 8],
-  //     [0, 3, 6],
-  //     [1, 4, 7],
-  //     [2, 5, 8],
-  //     [0, 4, 8],
-  //     [2, 4, 6]
-  //   ]
-  //   for (let i = 0; i < lines.length; i++) {
-  //     const [a, b, c] = lines[i]
-  //     if (
-  //       this.gameProcess.squares[a] &&
-  //       this.gameProcess.squares[a] === this.gameProcess.squares[b] &&
-  //       this.gameProcess.squares[a] === this.gameProcess.squares[c]
-  //     ) {
-  //       this.gameProcess.winner = this.gameProcess.squares[a]
-  //     }
-  //   }
-  //   const emptySquare = this.gameProcess.squares.find((item) => item === null)
-  //   if (emptySquare === undefined) this.gameProcess.winner = 'friendship'
-  // }
 }
 
 const games = []
-const characterList = Array(28).fill({
-  name: 'test'
-})
+const characterList = Array(28).fill('')
 
 server.on('connection', (ws) => {
   ws.id = uniqid()
@@ -103,6 +104,12 @@ server.on('connection', (ws) => {
         if (g.id === payload.gameId) {
           const player = ws.id === g.player_1.id ? 'player_1' : 'player_2'
 
+          if (g[player].isReady) return
+
+          if (payload.id) {
+            g[player].characterId = payload.id
+          }
+
           if (payload.action === 'next') {
             if (g[player].characterId < characterList.length - 1) {
               g[player].characterId++
@@ -133,43 +140,80 @@ server.on('connection', (ws) => {
       })
     }
 
-    if (payload.method === 'retry') {
-      // restart the game
+    if (payload.method === 'ready') {
+      // set ready
       games.forEach((g) => {
         if (g.id === payload.gameId) {
-          if (g.gameProcess.winner) {
-            g.gameProcess = {
-              squares: Array(9).fill(null),
-              xIsNext: true,
-              winner: false
-            }
-
-            server.clients.forEach((client) => {
-              if (
-                client.readyState === WebSocket.OPEN &&
-                (client.id === g.playerX || client.id === g.playerO)
-              ) {
-                client.send(JSON.stringify({ gameProcess: g.gameProcess }))
-              }
-            })
-          }
-        }
-      })
-    }
-
-    if (payload.method === 'quit') {
-      // quit the game
-      games.forEach((g, index, array) => {
-        if (g.id === payload.gameId) {
-          games = array.filter((game) => game.id !== payload.gameId)
+          const player = ws.id === g.player_1.id ? 'player_1' : 'player_2'
+          g[player].isReady = !g[player].isReady
 
           server.clients.forEach((client) => {
             if (
               client.readyState === WebSocket.OPEN &&
-              (client.id === g.playerX || client.id === g.playerO)
+              (client.id === g.player_1.id || client.id === g.player_2.id)
             ) {
-              client.send(JSON.stringify({ message: 'gameOver' }))
-              client.gameId = ''
+              if (g.player_1.isReady && g.player_2.isReady) {
+                client.send(
+                  JSON.stringify({
+                    message: 'nextPage'
+                  })
+                )
+              } else {
+                client.send(
+                  JSON.stringify({
+                    message: 'ready',
+                    player_1: g.player_1.isReady,
+                    player_2: g.player_2.isReady
+                  })
+                )
+              }
+            }
+          })
+        }
+      })
+    }
+
+    if (payload.method === 'getVsScreenIcons') {
+      games.forEach((g) => {
+        if (g.id === payload.gameId) {
+          server.clients.forEach((client) => {
+            if (
+              client.readyState === WebSocket.OPEN &&
+              (client.id === g.player_1.id || client.id === g.player_2.id)
+            ) {
+              client.send(
+                JSON.stringify({
+                  message: 'setVsScreenIcons',
+                  icons: g.icons
+                })
+              )
+            }
+          })
+        }
+      })
+    }
+
+    if (payload.method === 'changeVsScreenIcon') {
+      games.forEach((g) => {
+        if (g.id === payload.gameId) {
+          g.icons = g.icons.map((icon) => {
+            if (icon.keyCode === payload.keyCode) {
+              icon.isShown = !icon.isShown
+            }
+            return icon
+          })
+
+          server.clients.forEach((client) => {
+            if (
+              client.readyState === WebSocket.OPEN &&
+              (client.id === g.player_1.id || client.id === g.player_2.id)
+            ) {
+              client.send(
+                JSON.stringify({
+                  message: 'changedIcon',
+                  icons: g.icons
+                })
+              )
             }
           })
         }

@@ -6,19 +6,24 @@ import { compose } from 'redux'
 import { sendToServer, ws } from '../utils/WebSocket'
 import { setPageOpened } from '../store/websocket/actions'
 import ReadyPage from './ReadyPage'
-import MainPage from './MainPage'
+import FirstGamePage from './FirstGamePage'
 import GameNotFoundPage from './GameNotFoundPage'
-import { setCharacterId, setPlayer } from '../store/player/actions'
+import {
+  setCharacterId,
+  setPlayer,
+  setPlayerReady
+} from '../store/player/actions'
+import SecondGamePage from './SecondGamePage'
 
 const JoinGame = ({
-  order,
   match,
   pageOpened,
   setGameId,
   setPageOpened,
   setCharacterList,
   setPlayer,
-  setCharacterId
+  setCharacterId,
+  setPlayerReady
 }) => {
   useEffect(() => {
     ws.onopen = () => {
@@ -45,23 +50,31 @@ const JoinGame = ({
           player_2: res.player_2
         })
       }
+
+      if (res.message && res.message === 'ready') {
+        setPlayerReady({
+          player_1: res.player_1,
+          player_2: res.player_2
+        })
+      }
+
+      if (res.message && res.message === 'nextPage') {
+        setPageOpened('SecondGamePage')
+      }
     }
   }, [])
 
   return (
     <>
       {pageOpened === 'ReadyPage' && <ReadyPage />}
-      {pageOpened === 'MainPage' && <MainPage />}
+      {pageOpened === 'FirstGamePage' && <FirstGamePage />}
       {pageOpened === 'GameNotFoundPage' && <GameNotFoundPage />}
+      {pageOpened === 'SecondGamePage' && <SecondGamePage />}
     </>
   )
 }
 
-const mapStateToProps = ({
-  connecting: { pageOpened },
-  player: { order }
-}) => ({
-  order,
+const mapStateToProps = ({ connecting: { pageOpened } }) => ({
   pageOpened
 })
 
@@ -70,7 +83,8 @@ const mapDispatchToProps = {
   setCharacterList,
   setPageOpened,
   setPlayer,
-  setCharacterId
+  setCharacterId,
+  setPlayerReady
 }
 
 export default compose(

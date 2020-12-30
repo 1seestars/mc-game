@@ -1,31 +1,34 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { setPageOpened } from '../store/websocket/actions'
 import { connect } from 'react-redux'
+import { Wrapper } from '../styled/Wrapper'
+import styled from 'styled-components'
+
+const Count = styled.div`
+  font-size: 7rem;
+  font-family: inherit;
+  color: rgba(0, 0, 0, 0.6);
+  text-shadow: 3px 2px 3px;
+`
 
 const ReadyPage = ({ setPageOpened }) => {
   const [count, setCount] = useState(3)
 
-  const pageToReturn = () => {
+  useEffect(() => {
     const timeout = setTimeout(() => {
       if (count === 1) {
-        setCount('GO')
-        return
+        setPageOpened('FirstGamePage')
       }
-
-      if (count === 'GO') {
-        setPageOpened('MainPage')
-        setCount(3)
-        clearTimeout(timeout)
-      }
-      setCount(count - 1)
+      setCount((prev) => prev - 1)
     }, 1000)
-
-    return count
-  }
+    return () => clearTimeout(timeout)
+  }, [count])
 
   return (
     <>
-      <div>{pageToReturn()}</div>
+      <Wrapper>
+        <Count>{count}</Count>
+      </Wrapper>
     </>
   )
 }
